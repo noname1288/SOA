@@ -110,14 +110,3 @@ Các dịch vụ sẽ giao tiếp với nhau qua **REST API và HTTP**.
 Hệ thống sẽ được **triển khai bằng Docker** để quản lý dễ dàng hơn.
 
 ---
-
-## 5 🖼️ ER Diagram (toàn hệ thống)
-
-```mermaid
-erDiagram
-    USERS ||--o{ TEAM_MEMBERSHIP : thuộc
-    TEAMS ||--o{ TEAM_MEMBERSHIP : chứa
-    TEAMS ||--o{ TASKS : sở_hữu
-    TASKS ||--o{ TASK_ASSIGNMENT : phân_công
-    USERS ||--o{ TASK_ASSIGNMENT : thực_hiện
-    USERS ||--o{ NOTIFICATIONS : nhận
