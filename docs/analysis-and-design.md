@@ -42,63 +42,72 @@ Mỗi service có **database riêng** (MySQL) theo mô hình *Database per Servi
 
 ### 4.1 user‑service
 
-| Trường | Kiểu | Ghi chú |
-|--------|------|--------|
-| user_id (PK) | BIGINT AUTO | |
-| email | VARCHAR UNIQUE | |
-| display_name | VARCHAR | |
-| password | VARCHAR (Bcrypt) | |
-| created_at | DATETIME | |
+**Bảng: User**
+
+| Column     | Data Type    | Description               |
+|------------|--------------|---------------------------|
+| user_id    | integer(10)  | ID người dùng (Primary Key) |
+| fullname   | varchar(255) | Họ và tên                 |
+| email      | varchar(255) | Email                     |
+| username   | varchar(255) | Tên người dùng            |
+| password   | varchar(255) | Mật khẩu                  |
 
 ### 4.2 team‑service
 
-| Trường | Kiểu |
-|--------|------|
-| team_id (PK) | BIGINT AUTO |
-| name | VARCHAR |
-| created_by | BIGINT (FK users) |
+**Bảng: Team**
 
-**team_membership**
+| Column | Data Type    | Description               |
+|--------|--------------|---------------------------|
+| id     | INT          | ID nhóm (Primary Key)     |
+| name   | VARCHAR(255) | Tên nhóm                  |
 
-| Trường | Kiểu | |
-|--------|------|--|
-| id (PK) | BIGINT | |
-| team_id | BIGINT | |
-| user_id | BIGINT | |
-| role | ENUM('LEADER','MEMBER') | |
+**Bảng: Team_Membership**
+
+| Column        | Data Type      | Description                                               |
+|---------------|----------------|-----------------------------------------------------------|
+| membership_id | INT            | ID của Membership                                         |
+| team_id       | VARCHAR(255)   | ID nhóm (Foreign Key tới bảng teams)                     |
+| user_id       | VARCHAR(255)   | ID người dùng (References User Service)                   |
+| role          | VARCHAR(50)    | Vai trò của thành viên (ví dụ: "Admin", "Member")        |
 
 ### 4.3 task‑service
 
-| Trường | Kiểu |
-|--------|------|
-| task_id (PK) | BIGINT |
-| team_id | BIGINT |
-| title | VARCHAR(255) |
-| description | TEXT |
-| due_date | DATETIME |
-| creator_id | BIGINT |
-| created_at | DATETIME |
+**Bảng: Task**
 
-**task_assignment**
+| Column      | Data Type      | Description                                           |
+|-------------|----------------|-------------------------------------------------------|
+| id          | INT            | ID công việc (Primary Key)                            |
+| title       | VARCHAR(255)   | Tiêu đề công việc                                     |
+| description | TEXT           | Mô tả chi tiết công việc                              |
+| due_date    | DATETIME       | Thời gian hết hạn công việc                           |
+| created_by  | VARCHAR(255)   | ID của người tạo công việc (References User Service)  |
+| created_at  | DATETIME       | Thời gian tạo công việc                               |
+| team_id     | VARCHAR(255)   | ID team                                               |
 
-| Trường | Kiểu | |
-|--------|------|--|
-| id (PK) | BIGINT |
-| task_id | BIGINT |
-| user_id | BIGINT |
-| status | ENUM('PENDING','DONE') |
+**Bảng: Task_Assignee**
 
-### 4.4 notification‑service
+| Column            | Data Type      | Description                                                |
+|-------------------|----------------|------------------------------------------------------------|
+| task_assignee_id  | INT            | ID của task_assignees                                      |
+| task_id           | VARCHAR(255)   | ID công việc (Foreign Key tới bảng tasks)                  |
+| user_id           | VARCHAR(255)   | ID người thực hiện công việc (References User Service)     |
 
-| Trường | Kiểu | |
-|--------|------|--|
-| notify_id (PK) | BIGINT |
-| user_id | BIGINT |
-| title | VARCHAR |
-| content | TEXT |
-| channel | ENUM('EMAIL','IN_APP') |
-| sent_at | DATETIME |
-| status | ENUM('SUCCESS','FAIL','RETRY') |
+---
+
+## ✅ Tổng kết
+
+Hệ thống Tạo và Giao Việc dựa trên kiến trúc **Service-Oriented Architecture (SOA)** sẽ sử dụng các microservices chuyên biệt như:
+
+- `Task Service`
+- `User Service`
+- `Team Service`
+- `Notification Service`
+
+...để xử lý các yêu cầu từ người dùng một cách hiệu quả và có thể mở rộng.
+
+Các dịch vụ sẽ giao tiếp với nhau qua **REST API và HTTP**.  
+**Bảo mật** được đảm bảo qua các cơ chế xác thực và phân quyền người dùng.  
+Hệ thống sẽ được **triển khai bằng Docker** để quản lý dễ dàng hơn.
 
 ---
 
