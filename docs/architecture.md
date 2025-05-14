@@ -25,7 +25,6 @@ Thiết kế theo kiến trúc **microservice** độc lập, mỗi servic
 | **Team Service** (`team-service`)                 | 8082            | CRUD team; quản lý vai trò; API `isAdmin(teamId, userId)`    | ✅        | MySQL                    |
 | **Task Service** (`task-service`)                 | 8083            | CRUD task; xác thực trưởng nhóm; lưu assignee; gọi Notification    | ✅        | MySQL                    |
 | **Notification Service** (`notification-service`) | 8084            | Nhận yêu cầu gửi thông báo; gửi email / in‑app; log          | ✅        | MySQL                    |
-| *(Tùy chọn)* **Kafka/Rabbit**                     | 9092            | Hàng đợi sự kiện không đồng bộ (email, audit)                | ‑        | Có thể thêm sau          |
 
 ---
 
@@ -137,5 +136,3 @@ Xem sơ đồ chi tiết tại `docs/assets/task-system-architecture.png`
 ```
 
 ---
-
-### 👌 **Hoàn tất**
