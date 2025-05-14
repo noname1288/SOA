@@ -1,4 +1,4 @@
-### 📑 Hệ thống “Tạo & Giao việc” **
+### 📑 Hệ thống “Tạo & Giao việc” 
 
 ## 1. Tổng quan
 
