@@ -42,81 +42,35 @@ Client (Web/SPA) ──► API‑Gateway (8888)
 
 ---
 
-## 4. Luồng dữ liệu chính
+## 4. Giao tiếp giữa các service
 
-### 4.1 Tạo task
+### REST API
+- Tất cả các service đều cung cấp REST API
+- API Gateway đóng vai trò trung gian cho tất cả các request
+- Các service giao tiếp trực tiếp với nhau trong mạng nội bộ
 
-1. **Client → Gateway**: `POST /api/task` kèm JWT.
-2. **Gateway → User‑Service**: Check token (introspect) → **200 OK** hoặc **401**.
-3. **Gateway → Task‑Service**: Chuyển tiếp request.
-4. **Task‑Service → Team‑Service**: `GET /teams/is-leader?userId=…?teamId=…`
-
-   * Nếu `false` → **403 Forbidden**.
-5. **Task‑Service**:
-
-   * Lưu bản ghi **tasks**.
-   * Lưu **task\_assignments** (n\:many).
-6. **Task‑Service → Notification‑Service**:
-
-   ```
-   {
-     "title": "New Task: Design Dashboard",
-     "receiverIds": [3,5,8],
-     "content": "...",
-     "channel": ["EMAIL","IN_APP"]
-   }
-   ```
-7. **Notification‑Service** gửi email → SMTP / (tùy) FCM, ghi log.
-8. **Task‑Service → Gateway → Client**: Trả **201 Created** cùng payload task.
-
-### 4.2 Xem task
-
-*Luồng tương tự, bỏ bước kiểm tra trưởng nhóm nếu chỉ view.*
-
-### 4.3 Xóa task
-
-*Luồng tương tự, bỏ bước kiểm tra trưởng nhóm nếu chỉ view.*
+### Mạng nội bộ
+- Các service chạy trong Docker network
+- Service names trong Docker Compose:
+  - `gateway-service`
+  - `user-service`
+  - `team-service`
+  - `task-service`
+  - `notification-service`
 
 ---
 
-## 5. Mô hình dữ liệu tối thiểu
+## 5. Luồng dữ liệu chính
 
-| Bảng               | Trường chính                                                                               | Ghi chú              |
-| ------------------ | ------------------------------------------------------------------------------------------ | -------------------- |
-| `users`            | `user_id PK`, `email`, `display_name`, `password_hash`, `status`                           | User Service         |
-| `teams`            | `team_id PK`, `name`, `created_by`                                                         | Team Service         |
-| `team_members`     | `team_id FK`, `user_id FK`, `role ENUM('ADMIN','MEMBER')`                                  |                      |
-| `tasks`            | `task_id PK`, `team_id FK`, `title`, `description`, `due_date`, `creator_id`, `created_at` | Task Service         |
-| `task_assignments` | `task_assign_id PK`, `task_id FK`, `user_id FK`, `status ENUM('PENDING','DONE')`           |                      |
-| `notifications`    | `notify_id PK`, `user_id FK`, `title`, `content`, `channel`, `sent_at`, `status`           | Notification Service |
-
+1. Người dùng gửi yêu cầu qua API Gateway
+2. Task Service nhận yêu cầu
+3. Task Service kiểm tra người dùng đó có phải leader thông qua Team Service
+4. Nếu hợp lệ, yêu cầu được lưu và gửi thông báo cho các thành viên được gán nhiệm vụ
+5. Notification Service gửi thông báo qua Email
 
 ---
 
-## 6. Bảo mật & Middleware
-
-| Lớp                 | Mô tả                                                                         | Công cụ            |
-| ------------------- | ----------------------------------------------------------------------------- | ------------------ |
-| **Auth**            | JWT (HS256); lưu public‑key ở Gateway; refresh‑token qua User‑Service         | Spring Security 6  |
-| **Rate limit**      | Giới hạn 100 req/10 phút / IP (configurable)                                  | Bucket4j @ Gateway |
-| **API Logging**     | Sleuth / Micrometer → Grafana                                                 | Zipkin, Prometheus |
-| **Circuit‑Breaker** | Tùy chọn khi thêm Kafka hoặc nhiều backend                                    | Resilience4j       |
-
----
-
-## 7. DevOps & CI/CD (gợi ý)
-
-1. **Gradle 8.13** multi‑project; mỗi service tự build Docker image:
-
-   ```
-   ./gradlew :task-service:jibDockerBuild
-   ```
-2. **Docker Compose** cho local dev (`infra/docker-compose.yml`).
-3. **GitHub Actions**: on push → build & test → publish image → deploy (Railway / Render / k8s).
-
----
-
-## 8. Roadmap mở rộng
+## 6. Roadmap mở rộng
 
 | Phase | Tính năng                                  | Mục đích                |
 | ----- | ------------------------------------------ | ----------------------- |
@@ -127,12 +81,8 @@ Client (Web/SPA) ──► API‑Gateway (8888)
 
 ---
 
-## 9. Sơ đồ kiến trúc (tham khảo)
+## 7. Sơ đồ kiến trúc (tham khảo)
 
 Xem sơ đồ chi tiết tại `docs/assets/task-system-architecture.png` 
-
-```markdown
-![Task System – High‑Level Diagram](assets/task-system-architecture.png)
-```
 
 ---
